@@ -1,0 +1,28 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.6"
+      - run: |
+          go get .
+      - run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o htp_linux_amd64
+      - run: |
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o htp_darwin_amd64
+      - run: |
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o htp_darwin_arm64
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "htp*"
