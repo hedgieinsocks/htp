@@ -1,6 +1,6 @@
 # htp
 
-HTTP Tick Ping (htp) - a tool to send HTTP probe requests at regular intervals
+`htp` (http tick ping) - a tool to send HTTP probe requests at regular intervals
 
 The requests are sent at the exact scheduled time depending on the set interval, even if the previous requests have not completed yet. This might help determine how long the service exposed on the target URL stays unavailable from the user's perspective after e.g. k8s pod or web server restart.
 
@@ -13,13 +13,13 @@ Usage:
   htp URL [flags]
 
 Flags:
-  -i, --interval int   interval between requests in milliseconds (default 1000)
-  -l, --limit int      number of requests to make (default unlimited)
-  -t, --tail int       number of requests to tail (default 25)
-  -g, --get            use GET method (default HEAD)
-  -k, --insecure       allow insecure connections
-  -h, --help           help for htp
-  -v, --version        version for htp
+  -i, --interval int    interval between requests in milliseconds (default 1000)
+  -l, --limit int       number of requests to make (default unlimited)
+  -t, --tail int        number of requests to tail (default 25)
+  -m, --method string   specify HTTP request method (default "HEAD")
+  -k, --insecure        allow insecure connections
+  -h, --help            help for htp
+  -v, --version         version for htp
 ```
 
 ## Example

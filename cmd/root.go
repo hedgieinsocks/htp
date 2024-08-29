@@ -22,7 +22,7 @@ type options struct {
 	intervalMs    int
 	requestLimit  int
 	tailLines     int
-	useGet        bool
+	httpMethod    string
 	allowInsecure bool
 }
 
@@ -48,7 +48,7 @@ var opts options
 var rootCmd = &cobra.Command{
 	Use:     "htp URL",
 	Long:    "A tool to send HTTP probe requests at regular intervals",
-	Version: "v0.0.1",
+	Version: "v0.0.2",
 	Args:    cobra.ExactArgs(1),
 	Run:     main,
 }
@@ -65,7 +65,7 @@ func init() {
 	rootCmd.Flags().IntVarP(&opts.intervalMs, "interval", "i", 1000, "interval between requests in milliseconds")
 	rootCmd.Flags().IntVarP(&opts.requestLimit, "limit", "l", 0, "number of requests to make (default unlimited)")
 	rootCmd.Flags().IntVarP(&opts.tailLines, "tail", "t", 25, "number of requests to tail")
-	rootCmd.Flags().BoolVarP(&opts.useGet, "get", "g", false, "use GET method (default HEAD)")
+	rootCmd.Flags().StringVarP(&opts.httpMethod, "method", "m", "HEAD", "specify HTTP request method")
 	rootCmd.Flags().BoolVarP(&opts.allowInsecure, "insecure", "k", false, "allow insecure connections")
 	rootCmd.Flags().SortFlags = false
 }
@@ -81,14 +81,6 @@ func colorStatusCode(code int) string {
 		return color.RedString(stringCode)
 	default:
 		return stringCode
-	}
-}
-
-func setHttpMethod() string {
-	if opts.useGet {
-		return "GET"
-	} else {
-		return "HEAD"
 	}
 }
 
@@ -121,8 +113,8 @@ func renderOutput(m model, offset int) string {
 	return output
 }
 
-func probeUrl(c *http.Client, id int, target *url.URL, method string) tea.Msg {
-	req, err := http.NewRequest(method, target.String(), http.NoBody)
+func probeUrl(c *http.Client, id int, target *url.URL) tea.Msg {
+	req, err := http.NewRequest(opts.httpMethod, target.String(), http.NoBody)
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
@@ -187,8 +179,6 @@ func main(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("%v\n", err)
 	}
-	method := setHttpMethod()
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.allowInsecure},
 	}
@@ -196,7 +186,7 @@ func main(cmd *cobra.Command, args []string) {
 	p := tea.NewProgram(model{})
 	t := time.NewTicker(time.Duration(opts.intervalMs) * time.Millisecond)
 
-	fmt.Printf("%s %s every %dms\n\n", method, target, opts.intervalMs)
+	fmt.Printf("%s %s [%dms]\n\n", opts.httpMethod, target, opts.intervalMs)
 
 	go func() {
 		var wg sync.WaitGroup
@@ -210,7 +200,7 @@ func main(cmd *cobra.Command, args []string) {
 			wg.Add(1)
 			go func(id int) {
 				defer wg.Done()
-				p.Send(probeUrl(c, id, target, method))
+				p.Send(probeUrl(c, id, target))
 			}(id)
 			id++
 			<-t.C
