@@ -116,7 +116,7 @@ func renderOutput(m model, offset int) string {
 func probeUrl(c *http.Client, id int, target *url.URL) tea.Msg {
 	req, err := http.NewRequest(opts.httpMethod, target.String(), http.NoBody)
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatal(err)
 	}
 	start := time.Now()
 	resp, err := c.Do(req)
@@ -177,7 +177,7 @@ func (m model) View() string {
 func main(cmd *cobra.Command, args []string) {
 	target, err := url.ParseRequestURI(args[0])
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatal(err)
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.allowInsecure},
@@ -211,12 +211,12 @@ func main(cmd *cobra.Command, args []string) {
 
 	result, err := p.Run()
 	if err != nil {
-		log.Fatalf("%v\n", err)
+		log.Fatal(err)
 	}
 
 	resultModel, ok := result.(model)
 	if !ok {
-		log.Fatalf("%v\n", err)
+		log.Fatal(err)
 	}
 
 	fmt.Printf(renderOutput(resultModel, 0))
