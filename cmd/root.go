@@ -15,6 +15,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
+	"github.com/muesli/reflow/wordwrap"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +39,7 @@ type probe struct {
 
 type model struct {
 	probes []probe
+	width  int
 	exit   bool
 }
 
@@ -48,7 +50,7 @@ var opts options
 var rootCmd = &cobra.Command{
 	Use:     "htp URL",
 	Long:    "A tool to send HTTP probe requests at regular intervals",
-	Version: "v0.0.2",
+	Version: "v0.0.3",
 	Args:    cobra.ExactArgs(1),
 	Run:     main,
 }
@@ -153,6 +155,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.exit = true
 			return m, tea.Quit
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
 	case probeMsg:
 		if i := slices.IndexFunc(m.probes, func(r probe) bool { return r.id == msg.id }); i >= 0 {
 			m.probes[i] = probe(msg)
@@ -171,7 +175,8 @@ func (m model) View() string {
 	if offset < 0 {
 		offset = 0
 	}
-	return renderOutput(m, offset)
+	output := renderOutput(m, offset)
+	return wordwrap.String(output, m.width)
 }
 
 func main(cmd *cobra.Command, args []string) {
