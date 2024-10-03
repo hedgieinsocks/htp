@@ -26,6 +26,7 @@ type options struct {
 	intervalMs    int
 	requestLimit  int
 	pagerLines    int
+	timeoutMs     int
 	httpMethod    string
 	jsonFilter    string
 	allowInsecure bool
@@ -57,7 +58,7 @@ var timeFmt = "15:04:05.000"
 var rootCmd = &cobra.Command{
 	Use:     "htp URL",
 	Long:    "A tool to send HTTP probe requests at regular intervals",
-	Version: "v0.0.4",
+	Version: "v0.0.5",
 	Args:    cobra.ExactArgs(1),
 	Run:     main,
 }
@@ -74,9 +75,10 @@ func init() {
 	rootCmd.Flags().IntVarP(&opts.intervalMs, "interval", "i", 1000, "interval between requests in milliseconds")
 	rootCmd.Flags().IntVarP(&opts.requestLimit, "limit", "l", 0, "number of requests to make (default unlimited)")
 	rootCmd.Flags().IntVarP(&opts.pagerLines, "pager", "p", 25, "number of requests to pager")
+	rootCmd.Flags().IntVarP(&opts.timeoutMs, "timeout", "t", 0, "max allowed request time in milliseconds")
+	rootCmd.Flags().BoolVarP(&opts.allowInsecure, "insecure", "k", false, "allow insecure connections")
 	rootCmd.Flags().StringVarP(&opts.httpMethod, "method", "m", "GET", "specify HTTP request method")
 	rootCmd.Flags().StringVarP(&opts.jsonFilter, "json", "j", "", "jq-compatible filter for JSON response")
-	rootCmd.Flags().BoolVarP(&opts.allowInsecure, "insecure", "k", false, "allow insecure connections")
 	rootCmd.Flags().SortFlags = false
 }
 
@@ -244,7 +246,10 @@ func main(cmd *cobra.Command, args []string) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: opts.allowInsecure},
 	}
-	c := &http.Client{Transport: tr}
+	c := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(opts.timeoutMs) * time.Millisecond,
+	}
 	p := tea.NewProgram(model{})
 	t := time.NewTicker(time.Duration(opts.intervalMs) * time.Millisecond)
 
