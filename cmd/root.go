@@ -58,7 +58,7 @@ var timeFmt = "15:04:05.000"
 var rootCmd = &cobra.Command{
 	Use:     "htp URL",
 	Long:    "A tool to send HTTP probe requests at regular intervals",
-	Version: "v0.0.5",
+	Version: "v0.0.6",
 	Args:    cobra.ExactArgs(1),
 	Run:     main,
 }
