@@ -16,9 +16,10 @@ Flags:
   -i, --interval int    interval between requests in milliseconds (default 1000)
   -l, --limit int       number of requests to make (default unlimited)
   -p, --pager int       number of requests to pager (default 25)
+  -t, --timeout int     max allowed request time in milliseconds
+  -k, --insecure        allow insecure connections
   -m, --method string   specify HTTP request method (default "GET")
   -j, --json string     jq-compatible filter for JSON response
-  -k, --insecure        allow insecure connections
   -h, --help            help for htp
   -v, --version         version for htp
 ```
